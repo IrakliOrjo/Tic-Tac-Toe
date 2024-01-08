@@ -18,20 +18,12 @@ const Board = () => {
   const [winner, setWinner] = useState(false)
   const [score, setScore] = useState({xScore: 0, oScore: 0})
 
-  useEffect(() => {
-    console.log('useeffect run')
-    console.log(winner)
-    if(winner){
-      const winner = checkWinner()
-      console.log('winner found')
-       if (winner === 'x') {
-        setScore(prevScore => ({ ...prevScore, xScore: prevScore.xScore + 1 }));
-    } else {
-        setScore(prevScore => ({ ...prevScore, oScore: prevScore.oScore + 1 }));
-    }
-    }
-  },[board])
+
   const updateBoard = (idx: number) => {
+    if(board[idx] || checkWinner()){
+      
+      return
+    }
     const updatedBoard = board.map((val, i) => {
       if(idx === i){
 
@@ -45,41 +37,63 @@ const Board = () => {
       }
     })
     setBoard(updatedBoard)
-    setXPlaying(!xPlaying)
-    checkWinner()
-    
-
+    setXPlaying(!xPlaying) 
   }
 
   const checkWinner = () => {
     for(let i=0; i<WINNING_NUMBERS.length; i++){
       const [x,y,z] = WINNING_NUMBERS[i]
       if(board[x] && board[x] === board[y] && board[y] === board[z]){
-        setWinner(true)
+        
         return board[x]
       }
     }
+    return null
   }
 
+  const winSome = checkWinner()
+    let status;
+    if (winSome) {
+      status = "Winner: " + winSome;
+    } else {
+      status = "Next player: " + (xPlaying ? "X" : "O");
+    }
 
+    if(!winner){
+      if(winSome){
+        if(winSome === 'x'){
+          setScore((prevScore) => ({ ...prevScore, xScore: prevScore.xScore + 1 }));
+          setWinner(true)
+        }else{
+          setScore((prevScore) => ({ ...prevScore, oScore: prevScore.oScore + 1 }));
+    setWinner(true);
+        }
+      }
+    }
+
+    const reset = () => {
+      const newArr = Array(9).fill(null)
+      setBoard(newArr)
+      setWinner(false)
+    }
 
   return (
     <div>
       <p>Hey {xPlaying ? 'X' : 'O'}'s turn to play!</p>
-      <p>THE X SCORE: {score.xScore}</p>
-      <p>THE O SCORE: {score.oScore}</p>
+      <p>THE STATUS: {status}</p>
+      <p>X SCORE: {score.xScore} O SCORE: {score.oScore}</p>
       <div className="grid">
         {
         board.map((val,i) => {
           return (
-            <Box winner={winner} value={val} onClick={() => { val === null && updateBoard(i)}}/>
+            <Box winner={winner} value={val} onClick={() => {updateBoard(i)}}/>
           )
         })
       }
       </div>
       
  
-
+      <button onClick={reset}>RESET</button>
     </div>
   )
 }
